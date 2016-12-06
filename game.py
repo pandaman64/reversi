@@ -84,6 +84,12 @@ def playable(board, turn):
               break
   return res
 
+def index2notation(x, y):
+  return (chr(x + ord('a')), chr(y + ord('1')))
+
+def notation2index(alpha, num):
+  return (ord(alpha) - ord('a'), ord(num) - ord('1'))
+
 class GameState(object):
   """Represents the state of a game at a given point in time."""
   def __init__(self, board, turn):
@@ -94,13 +100,13 @@ class GameState(object):
     self.board = place_disc(self.board, self.turn, x, y)
     self.turn = opponent(self.turn)
 
-  def visualize(self, positions=False):
+  def visualize(self, notations=False):
     res = self.turn.name + "'s turn\n"
     pl = playable(self.board, self.turn)
-    if positions:
+    if notations:
       res += "*abcdefgh*\n"
     for y in range(8):
-      if positions:
+      if notations:
         res += chr(ord('1') + y)
       for x in range(8):
         if self.board[y,x] == Player.black.value:
@@ -111,10 +117,10 @@ class GameState(object):
           res += "*"
         else:
           res += "_"
-      if positions:
+      if notations:
         res += chr(ord('1') + y)
       res += "\n"
-    if positions:
+    if notations:
       res += "*abcdefgh*\n"
     return res
 
@@ -141,16 +147,16 @@ def initialize_game():
 
 if __name__ == '__main__':
   game = initialize_game()
-  print(game.visualize(positions=True))
+  print(game.visualize(notations=True))
   while not game.is_game_over():
     (x, y) = (0, 0)
     while True:
       (alpha, num) = input("input: ")
       print((alpha, num))
       if num >= '1' and num <= '8' and alpha >= 'a' and alpha <= 'h':
-        (x, y) = (ord(alpha) - ord('a'), ord(num) - ord('1'))
+        (x, y) = notation2index(alpha, num)
         break
     game.update(x, y)
     print()
-    print(game.visualize(positions=True))
+    print(game.visualize(notations=True))
 
