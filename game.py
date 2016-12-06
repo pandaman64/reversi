@@ -3,12 +3,6 @@ from scipy import ndimage
 from enum import Enum
 import sys
 
-from IPython import embed
-
-# black goes first
-# wb
-# bw
-
 class Player(Enum):
   black = 1
   white = -1
