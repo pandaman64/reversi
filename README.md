@@ -8,3 +8,4 @@ WIP
 - [ ] add more comments
 - [ ] Monte-Carlo based AI
 - [ ] accumulate play data
+- [ ] investigate [Brightwell Quotient](https://en.wikipedia.org/wiki/Reversi#Brightwell_Quotient)
