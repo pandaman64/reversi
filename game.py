@@ -84,19 +84,26 @@ def index2notation(x, y):
 def notation2index(alpha, num):
   return (ord(alpha) - ord('a'), ord(num) - ord('1'))
 
+def player_disc_total(board, turn):
+  return np.sum(board == turn.value)
+
 class GameState(object):
   """Represents the state of a game at a given point in time."""
   def __init__(self, board, turn):
     self.board = board
+    self.__playable = None
     self.turn = turn
 
   def update(self, x, y):
-    self.board = place_disc(self.board, self.turn, x, y)
-    self.turn = opponent(self.turn)
+    new_board = place_disc(self.board, self.turn, x, y)
+    return GameState(new_board, opponent(self.turn))
+
+  def skip_turn(self):
+    return GameState(self.board, opponent(self.turn))
 
   def visualize(self, notations=False):
     res = self.turn.name + "'s turn\n"
-    pl = playable(self.board, self.turn)
+    pl = self.__valid_moves()
     if notations:
       res += "*abcdefgh*\n"
     for y in range(8):
@@ -119,20 +126,36 @@ class GameState(object):
     return res
 
   def is_game_over(self):
-    w = np.sum(playable(self.board, Player.white)) == 0
-    b = np.sum(playable(self.board, Player.black)) == 0
-    return w and b
+    return self.no_valid_moves() and self.skip_turn().no_valid_moves()
+
+  def __valid_moves(self):
+    if self.__playable is None:
+      self.__playable = playable(self.board, self.turn)
+    return self.__playable
 
   def is_valid_move(self, x, y):
-    return playable(self.board, self.turn)[y,x]
+    return self.__valid_moves()[y,x]
+
+  def no_valid_moves(self):
+    return np.sum(self.__valid_moves()) == 0
+
+  def is_cell_empty(self, x, y):
+    return self.board[y, x] == 0
+
+  def disc_owner(self, x, y):
+    return Player(self.board[y, x])
+
+  def disc_count(self):
+    b = player_disc_total(self.board, Player.black)
+    w = player_disc_total(self.board, Player.white)
+    return (b, w)
 
   def game_outcome(self):
-    w = np.sum(self.board == Player.white.value)
-    b = np.sum(self.board == Player.black.value)
-    if w > b:
-      return Player.white.name
-    elif w < b:
+    (b, w) = self.disc_count()
+    if b > w:
       return Player.black.name
+    elif b < w:
+      return Player.white.name
     else:
       return 'tie'
 
@@ -150,7 +173,7 @@ if __name__ == '__main__':
       if num >= '1' and num <= '8' and alpha >= 'a' and alpha <= 'h':
         (x, y) = notation2index(alpha, num)
         break
-    game.update(x, y)
+    game = game.update(x, y)
     print()
     print(game.visualize(notations=True))
 

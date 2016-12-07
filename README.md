@@ -1,9 +1,9 @@
 WIP
 
 # TODO
-- [ ] PyGame GUI
-  + [ ] decouple GUI from game engine
-  + [ ] react gracefully to invalid moves
+- [x] PyGame GUI
+  + [x] decouple GUI from game engine
+  + [x] react gracefully to invalid moves
   + [ ] ~~react to mouse movement~~
 - [ ] add more comments
 - [ ] Monte-Carlo based AI
