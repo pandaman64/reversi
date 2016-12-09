@@ -6,8 +6,8 @@ WIP
   + [x] react gracefully to invalid moves
   + [ ] ~~react to mouse movement~~
 - [ ] add more comments
-- [ ] Monte-Carlo based AI
-  + [ ] add vs AI mode
+- [x] Monte-Carlo based AI
+  + [x] add vs AI mode
   + [ ] implement in C++?
   + [ ] investigate OpenCL
 - [ ] accumulate play data
