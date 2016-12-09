@@ -24,7 +24,7 @@ def monte_carlo(state, player, coords):
   pool.join()
   return [r.get() for r in results]
 
-def next_move(state, player):
+def next_move(state, player, debug=False):
   n = 100
   totals = {}
   wins = {}
@@ -39,11 +39,12 @@ def next_move(state, player):
   for key in totals.keys():
     prob.append((wins.get(key, 0) /  totals[key], key))
   prob = sorted(prob)
-  print(prob)
+  if debug:
+    print(prob)
   return prob[-1][1]
 
-import cProfile
+#import cProfile
+#cProfile.run('next_move(g.initialize_game(), g.Player.black)')
 if __name__ == '__main__':
-#  cProfile.run('next_move(g.initialize_game(), g.Player.black)')
   print(next_move(g.initialize_game(), g.Player.black))
 

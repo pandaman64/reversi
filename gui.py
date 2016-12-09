@@ -28,7 +28,7 @@ background_color = (255, 255, 255)
 font_color = (0, 0, 0)
 font_size = 30
 text_coord = (10, cell_height*8 + 10)
-mode = GameMode.manual
+mode = GameMode.vs
 ai_player = g.Player.white
 
 def show_board(state, screen, font, text_pairs):
@@ -43,6 +43,9 @@ def show_board(state, screen, font, text_pairs):
     screen.blit(font.render(text, True, font_color), coord)
   pg.display.flip()
 
+def print_move(turn, x, y):
+  print(turn.name[0] + ' ' + ''.join(g.index2notation(x, y)))
+
 if __name__ == '__main__':
   pg.init()
   screen = pg.display.set_mode(screen_size)
@@ -50,38 +53,40 @@ if __name__ == '__main__':
 
   state = g.initialize_game()
   while True:
-    if state.turn == ai_player:
-      move = ai.next_move(state, ai_player)
-      state = state.update(move[0], move[1])
+    status = ""
+    status += "turn: " + state.turn.name
+    status += ", (black, white): " + repr(state.disc_count())
+    if state.is_game_over():
+      outcome = state.game_outcome()
+      if outcome == "tie":
+        status += ", tie"
+      else:
+        status += ", Winner: " + outcome
+
+    show_board(state, screen, font, [(status, text_coord)])
+
+    ai_turn = mode == GameMode.auto or (mode == GameMode.vs and state.turn == ai_player)
+    if ai_turn and not state.is_game_over():
+      if state.no_valid_moves():
+        state = state.skip_turn()
+      else:
+        (cx, cy) = ai.next_move(state, state.turn)
+        print_move(state.turn, cx, cy)
+        state = state.update(cx, cy)
 
     for event in pg.event.get():
       if event.type == pg.QUIT:
         sys.exit()
-      elif mode != GameMode.auto and event.type == pg.MOUSEBUTTONUP:
-        if mode == GameMode.vs and state.turn == ai_player:
+      elif event.type == pg.MOUSEBUTTONUP and not state.is_game_over():
+        if ai_turn:
           continue
         (cx, cy) = pg.mouse.get_pos()
         cx //= cell_width
         cy //= cell_height
         if g.bounds_check(cx, cy) and state.is_valid_move(cx, cy):
+          print_move(state.turn, cx, cy)
           state = state.update(cx, cy)
           if state.is_game_over():
-            pass
+            print('game over!')
           elif state.no_valid_moves():
             state = state.skip_turn()
-
-    status = ""
-    if mode == GameMode.auto:
-      pass
-    else:
-      status += "turn: " + state.turn.name
-      status += ", (black, white): " + repr(state.disc_count())
-      if state.is_game_over():
-        outcome = state.game_outcome()
-        if outcome == "tie":
-          status += ", tie"
-        else:
-          status += ", Winner: " + outcome
-
-    show_board(state, screen, font, [(status, text_coord)])
-
