@@ -20,6 +20,11 @@ def initial_board():
   board[3:5,3:5] = np.array([[w, b], [b, w]])
   return board
 
+def bounds_check(x, y):
+  return x >= 0 and x < 8 and y >= 0 and y < 8
+
+surrounding_coords = [(i, j) for i in [-1, 0, 1] for j in [-1, 0, 1] if i != 0 or j != 0]
+
 def place_disc(board, turn, x, y):
   if board[y,x] != 0:
     raise Exception('cell not empty', (x, y))
@@ -31,22 +36,18 @@ def place_disc(board, turn, x, y):
 
   opp = opponent(turn)
 
-  for i in [-1, 0, 1]:
-    for j in [-1, 0, 1]:
-      if i == 0 and j == 0:
-        continue
-      (xp, yp) = (x+i, y+j)
-      cl = [(x,y)]
-      while bws[yp,xp] == opp.value:
-        cl.append((xp,yp))
-        (xp, yp) = (xp+i, yp+j)
-        if bws[yp,xp] == 0:
-          break;
-        if bws[yp,xp] == turn.value:
-          print(cl)
-          for ux, uy in cl:
-            bws[uy,ux] = turn.value
-          break
+  for i, j in surrounding_coords:
+    (xp, yp) = (x+i, y+j)
+    cl = [(x,y)]
+    while bws[yp,xp] == opp.value:
+      cl.append((xp,yp))
+      (xp, yp) = (xp+i, yp+j)
+      if bws[yp,xp] == 0:
+        break;
+      if bws[yp,xp] == turn.value:
+        for ux, uy in cl:
+          bws[uy,ux] = turn.value
+        break
   return bws[1:9,1:9]
 
 def playable(board, turn):
@@ -62,20 +63,16 @@ def playable(board, turn):
 
   res = np.zeros((8,8), dtype=bool)
 
-  for x in range(1,9):
-    for y in range(1,9):
-      if not cs[y,x]:
-        continue
-      for i in [-1, 0, 1]:
-        for j in [-1, 0, 1]:
-          if i == 0 and j == 0:
-            continue
-          (xp, yp) = (x+i, y+j)
-          while bws[yp,xp] == opp.value:
-            (xp, yp) = (xp+i, yp+j)
-            if bws[yp,xp] != opp.value: # either empty(0) or player's color
-              res[y-1,x-1] |= bws[yp,xp] == turn.value
-              break
+  for x, y in [(x, y) for x in range(1,9) for y in range(1,9) if cs[y,x]]:
+    for i, j in surrounding_coords:
+      if res[y-1,x-1]:
+        break
+      (xp, yp) = (x+i, y+j)
+      while bws[yp,xp] == opp.value:
+        (xp, yp) = (xp+i, yp+j)
+        if bws[yp,xp] != opp.value: # either empty(0) or player's color
+          res[y-1,x-1] |= bws[yp,xp] == turn.value
+          break
   return res
 
 def index2notation(x, y):
@@ -92,6 +89,7 @@ class GameState(object):
   def __init__(self, board, turn):
     self.board = board
     self.__playable = None
+    self.__playable_coords = None
     self.turn = turn
 
   def update(self, x, y):
@@ -103,7 +101,7 @@ class GameState(object):
 
   def visualize(self, notations=False):
     res = self.turn.name + "'s turn\n"
-    pl = self.__valid_moves()
+    pl = self.valid_moves()
     if notations:
       res += "*abcdefgh*\n"
     for y in range(8):
@@ -128,16 +126,24 @@ class GameState(object):
   def is_game_over(self):
     return self.no_valid_moves() and self.skip_turn().no_valid_moves()
 
-  def __valid_moves(self):
+  def valid_moves(self):
     if self.__playable is None:
       self.__playable = playable(self.board, self.turn)
     return self.__playable
 
+  def valid_moves_coords(self):
+    if self.__playable_coords is None:
+      self.__playable_coords = [(x, y) for x in range(8) for y in range(8) if self.is_valid_move(x, y)]
+    return self.__playable_coords
+
   def is_valid_move(self, x, y):
-    return self.__valid_moves()[y,x]
+    return self.valid_moves()[y,x]
+
+  def valid_move_count(self):
+    return np.sum(self.valid_moves())
 
   def no_valid_moves(self):
-    return np.sum(self.__valid_moves()) == 0
+    return self.valid_move_count() == 0
 
   def is_cell_empty(self, x, y):
     return self.board[y, x] == 0
@@ -158,6 +164,9 @@ class GameState(object):
       return Player.white.name
     else:
       return 'tie'
+
+  def has_won(self, player):
+    return self.is_game_over() and self.game_outcome() == player.name
 
 def initialize_game():
   return GameState(initial_board(), Player.black)
