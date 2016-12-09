@@ -8,5 +8,7 @@ WIP
 - [ ] add more comments
 - [ ] Monte-Carlo based AI
   + [ ] add vs AI mode
+  + [ ] implement in C++?
+  + [ ] investigate OpenCL
 - [ ] accumulate play data
 - [ ] investigate [Brightwell Quotient](https://en.wikipedia.org/wiki/Reversi#Brightwell_Quotient)
