@@ -4,6 +4,7 @@ import random
 
 def playout(state, player, coord):
   (cx, cy) = coord
+  state = state.update(cx, cy)
   while True:
     if state.no_valid_moves():
       state = state.skip_turn()
