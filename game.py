@@ -57,21 +57,19 @@ def playable(board, turn):
 
   opp = opponent(turn)
 
-  f = np.array([[1,1,1],[1,0,1],[1,1,1]])
-  cd = ndimage.convolve(bws == opp.value, f, mode='constant', cval=0)
-  cs = np.logical_and(cd > 0, empty_cells(bws))
-
   res = np.zeros((8,8), dtype=bool)
 
-  for x, y in [(x, y) for x in range(1,9) for y in range(1,9) if cs[y,x]]:
+  for x, y in [(x, y) for x in range(1,9) for y in range(1,9) if bws[y,x] == 0]:
     for i, j in surrounding_coords:
       if res[y-1,x-1]:
         break
       (xp, yp) = (x+i, y+j)
       while bws[yp,xp] == opp.value:
         (xp, yp) = (xp+i, yp+j)
-        if bws[yp,xp] != opp.value: # either empty(0) or player's color
-          res[y-1,x-1] |= bws[yp,xp] == turn.value
+        if bws[yp,xp] == 0:
+          break
+        if bws[yp,xp] == turn.value:
+          res[y-1,x-1] = True
           break
   return res
 
