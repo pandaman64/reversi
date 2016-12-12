@@ -1,6 +1,8 @@
 from multiprocessing import Pool
+import numpy as np
 import game as g
 import random
+import util
 
 def playout(state, player, coord):
   (cx, cy) = coord
@@ -26,7 +28,9 @@ def monte_carlo(state, player, coords):
   return [r.get() for r in results]
 
 def next_move(state, player, debug=False):
-  n = 100
+  totalDisc = g.player_disc_total(state.board, g.Player.black) + g.player_disc_total(state.board, g.Player.white)
+  n = int(25  * (1 + np.exp(totalDisc / 16)))
+  #print(n)  
   totals = {}
   wins = {}
   moves = state.valid_moves_coords()
@@ -47,11 +51,21 @@ def next_move(state, player, debug=False):
 #import cProfile
 #cProfile.run('next_move(g.initialize_game(), g.Player.black)')
 if __name__ == '__main__':
-  game = g.initialize_game()
-  game.board[3,3] = g.Player.black.value
-  game.board[3,4] = g.Player.white.value
-  game.board[4,3] = g.Player.white.value
-  game.board[4,4] = g.Player.black.value
-  print(game.visualize(notations=True))
-  print(next_move(game, g.Player.black))
+  game = util.read_game()
+  me = util.str2player(input())
+  while(not game.is_game_over()):
+    if(game.no_valid_moves()):
+      game.skip_turn()
+      continue
+
+    if(game.turn == me):
+      x,y = next_move(game,me)
+      game = game.update(x,y)
+      print(util.stringify(x,y,me))
+    elif(game.turn == g.opponent(me)):
+      x,y,p = util.parse(input())
+      game = game.update(x,y)
+    else:
+      raise Exception("rejsf")
+#  print(next_move(g.initialize_game(), g.Player.black))
 

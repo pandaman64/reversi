@@ -1,5 +1,5 @@
+import numpy as np
 from multiprocessing import Pool
-import game as g
 import random
 
 def playout(state, player, coord):
@@ -25,8 +25,19 @@ def monte_carlo(state, player, coords):
   pool.join()
   return [r.get() for r in results]
 
-def next_move(state, player, debug=False):
-  n = 100
+def conv_monte(state, player, debug=False):
+  n = 60
+  if sum(state.disc_count()) >= 20:
+      n = 100
+  if sum(state.disc_count()) >= 30:
+      n = 150
+  if sum(state.disc_count()) >= 40:
+      n = 200
+  if sum(state.disc_count()) >= 50:
+      n = 400
+  if sum(state.disc_count()) >= 60:
+      n = 800
+
   totals = {}
   wins = {}
   moves = state.valid_moves_coords()
@@ -43,15 +54,3 @@ def next_move(state, player, debug=False):
   if debug:
     print(prob)
   return prob[-1][1]
-
-#import cProfile
-#cProfile.run('next_move(g.initialize_game(), g.Player.black)')
-if __name__ == '__main__':
-  game = g.initialize_game()
-  game.board[3,3] = g.Player.black.value
-  game.board[3,4] = g.Player.white.value
-  game.board[4,3] = g.Player.white.value
-  game.board[4,4] = g.Player.black.value
-  print(game.visualize(notations=True))
-  print(next_move(game, g.Player.black))
-

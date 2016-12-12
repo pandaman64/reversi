@@ -14,10 +14,10 @@ def empty_cells(board):
   return board == 0
 
 def initial_board():
-  #b = Player.black.value
-  #w = Player.white.value
+  b = Player.black.value
+  w = Player.white.value
   board = np.zeros((8,8))
-  #board[3:5,3:5] = np.array([[w, b], [b, w]])
+  board[3:5,3:5] = np.array([[w, b], [b, w]])
   return board
 
 def bounds_check(x, y):
@@ -89,9 +89,6 @@ class GameState(object):
     self.__playable = None
     self.__playable_coords = None
     self.turn = turn
-
-  def push(self,x,y,player):
-    self.board[y,x] = player.value
 
   def update(self, x, y):
     new_board = place_disc(self.board, self.turn, x, y)
@@ -186,4 +183,3 @@ if __name__ == '__main__':
     game = game.update(x, y)
     print()
     print(game.visualize(notations=True))
-

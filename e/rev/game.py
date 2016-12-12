@@ -14,10 +14,10 @@ def empty_cells(board):
   return board == 0
 
 def initial_board():
-  #b = Player.black.value
-  #w = Player.white.value
+  b = Player.black.value
+  w = Player.white.value
   board = np.zeros((8,8))
-  #board[3:5,3:5] = np.array([[w, b], [b, w]])
+  board[3:5,3:5] = np.array([[w, b], [b, w]])
   return board
 
 def bounds_check(x, y):
@@ -57,19 +57,21 @@ def playable(board, turn):
 
   opp = opponent(turn)
 
+  f = np.array([[1,1,1],[1,0,1],[1,1,1]])
+  cd = ndimage.convolve(bws == opp.value, f, mode='constant', cval=0)
+  cs = np.logical_and(cd > 0, empty_cells(bws))
+
   res = np.zeros((8,8), dtype=bool)
 
-  for x, y in [(x, y) for x in range(1,9) for y in range(1,9) if bws[y,x] == 0]:
+  for x, y in [(x, y) for x in range(1,9) for y in range(1,9) if cs[y,x]]:
     for i, j in surrounding_coords:
       if res[y-1,x-1]:
         break
       (xp, yp) = (x+i, y+j)
       while bws[yp,xp] == opp.value:
         (xp, yp) = (xp+i, yp+j)
-        if bws[yp,xp] == 0:
-          break
-        if bws[yp,xp] == turn.value:
-          res[y-1,x-1] = True
+        if bws[yp,xp] != opp.value: # either empty(0) or player's color
+          res[y-1,x-1] |= bws[yp,xp] == turn.value
           break
   return res
 
@@ -89,9 +91,6 @@ class GameState(object):
     self.__playable = None
     self.__playable_coords = None
     self.turn = turn
-
-  def push(self,x,y,player):
-    self.board[y,x] = player.value
 
   def update(self, x, y):
     new_board = place_disc(self.board, self.turn, x, y)
@@ -174,6 +173,7 @@ def initialize_game():
 
 if __name__ == '__main__':
   game = initialize_game()
+  game.board[2,2] = 1
   print(game.visualize(notations=True))
   while not game.is_game_over():
     (x, y) = (0, 0)
@@ -183,7 +183,8 @@ if __name__ == '__main__':
       if num >= '1' and num <= '8' and alpha >= 'a' and alpha <= 'h':
         (x, y) = notation2index(alpha, num)
         break
-    game = game.update(x, y)
+    if game.is_valid_move(x,y):
+        game = game.update(x, y)
     print()
     print(game.visualize(notations=True))
 

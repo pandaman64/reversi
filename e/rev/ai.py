@@ -47,11 +47,5 @@ def next_move(state, player, debug=False):
 #import cProfile
 #cProfile.run('next_move(g.initialize_game(), g.Player.black)')
 if __name__ == '__main__':
-  game = g.initialize_game()
-  game.board[3,3] = g.Player.black.value
-  game.board[3,4] = g.Player.white.value
-  game.board[4,3] = g.Player.white.value
-  game.board[4,4] = g.Player.black.value
-  print(game.visualize(notations=True))
-  print(next_move(game, g.Player.black))
+  print(next_move(g.initialize_game(), g.Player.black))
 

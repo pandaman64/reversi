@@ -4,7 +4,6 @@ import os
 import pygame as pg
 import game as g
 import ai
-import subprocess
 
 def load_image(name):
   return pg.image.load(os.path.join('img', name + '.png'))
